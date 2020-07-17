@@ -1,0 +1,6 @@
+<a href="/new" class="uk-button uk-button-primary">new</a>
+<ul class="uk-list uk-list-striped">
+  <% @notes.each do |note| %>
+    <li><a href="/notes/<%= note[:filename] %>"><%= note[:title] %></a></li>
+  <% end %>
+</ul>

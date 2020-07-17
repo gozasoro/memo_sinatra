@@ -1,0 +1,20 @@
+<form action="/notes/<%= @filename %>" method="post">
+  <div class="uk-margin">
+    <input class="uk-input" type="hidden" name="_method" value="patch">
+  </div>
+  <div class="uk-margin">
+    <input class="uk-input uk-width-1-2" type="text" name="title" value="<%= @content[:title] %>" placeholder="title">
+  </div>
+  <div class="uk-margin">
+    <textarea class="uk-textarea" name="text" placeholder="text"><%= @content[:text] %></textarea>
+  </div>
+  <div class="uk-margin">
+    <input class="uk-button uk-button-default" type="submit" value="変更">
+  </div>
+</form>
+<form action="/notes/<%= @filename %>" method="post">
+  <input type="hidden" name="_method" value="delete">
+  <div class="uk-margin">
+    <input class="uk-button uk-button-danger" type="submit" value="削除">
+  </div>
+</form>
