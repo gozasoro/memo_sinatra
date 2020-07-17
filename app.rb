@@ -23,7 +23,13 @@ end
 get '/notes/:filename' do
   @filename = params[:filename]
   @content = Note.content(params[:filename])
-  erb :notes
+  erb :show
+end
+
+get '/notes/:filename/edit' do
+  @filename = params[:filename]
+  @content = Note.content(params[:filename])
+  erb :edit
 end
 
 patch '/notes/:filename' do

@@ -28,7 +28,7 @@ class Note
     def rewrite(filename, title, text)
       path = "notes/#{filename}"
       File.open(path, 'w') do |f|
-        f.puts title
+        f.puts title == '' ? 'no title' : title
         f.puts text
       end
     end
@@ -39,11 +39,7 @@ class Note
   end
 
   def initialize(title, text)
-    @title = if title == ''
-               'no title'
-             else
-               title
-             end
+    @title = title == '' ? 'no title' : title
     @text = text
   end
 

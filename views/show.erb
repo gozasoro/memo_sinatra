@@ -1,0 +1,15 @@
+<div class="uk-margin">
+  <input class="uk-input uk-width-1-2" type="text" name="title" value="<%= @content[:title] %>" placeholder="title" disabled>
+</div>
+<div class="uk-margin">
+  <textarea class="uk-textarea uk-height-medium" name="text" placeholder="text" disabled><%= @content[:text] %></textarea>
+</div>
+<div class="uk-margin">
+  <a class="uk-button uk-button-default" href="/notes/<%= @filename %>/edit">変更</a>
+</div>
+<form action="/notes/<%= @filename %>" method="post">
+  <input type="hidden" name="_method" value="delete">
+  <div class="uk-margin">
+    <input class="uk-button uk-button-danger" type="submit" value="削除">
+  </div>
+</form>
