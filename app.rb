@@ -2,9 +2,7 @@
 
 require 'sinatra'
 require 'sinatra/reloader'
-require './note'
-
-enable :method_override
+require_relative 'note'
 
 get '/' do
   @notes = Note.list
