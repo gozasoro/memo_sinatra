@@ -1,40 +1,44 @@
 # frozen_string_literal: true
 
+require 'pg'
+
 class Note
   class << self
     def list
       array = []
-      Dir.glob('notes/*').sort_by { |f| File.birthtime(f) }.each do |path|
-        title = ''
-        File.open(path) { |f| title = f.gets }
+      conn = PG.connect(host: 'localhost', user: 'postgres', password: 'password', dbname: 'memo_sinatra')
+      conn.exec('select * from notes;').each do |row|
         array.push << {
-          title: title,
-          filename: File.basename(path)
+          title: row['title'],
+          filename: row['id']
         }
       end
+      conn&.close
       array
     end
 
     def content(filename)
       hash = {}
-      File.open("notes/#{filename}") do |f|
-        lines = f.readlines
-        hash[:title] = lines.shift
-        hash[:text] =  lines.join('')
+      conn = PG.connect(host: 'localhost', user: 'postgres', password: 'password', dbname: 'memo_sinatra')
+      conn.exec("select * from notes where id = #{filename};") do |result|
+        hash[:title] = result[0]['title']
+        hash[:text] = result[0]['text']
       end
+      conn&.close
       hash
     end
 
     def rewrite(filename, title, text)
-      path = "notes/#{filename}"
-      File.open(path, 'w') do |f|
-        f.puts title == '' ? 'no title' : title
-        f.puts text
-      end
+      title == '' ? 'no title' : title
+      conn = PG.connect(host: 'localhost', user: 'postgres', password: 'password', dbname: 'memo_sinatra')
+      conn.exec("update notes set title = '#{title}', text = '#{text}' where id = #{filename}")
+      conn&.close
     end
 
     def delete(filename)
-      File.delete("notes/#{filename}")
+      conn = PG.connect(host: 'localhost', user: 'postgres', password: 'password', dbname: 'memo_sinatra')
+      conn.exec("delete from notes where id = #{filename}")
+      conn&.close
     end
   end
 
@@ -44,10 +48,8 @@ class Note
   end
 
   def write
-    path = "notes/#{Time.now.to_i}.txt"
-    File.open(path, 'w') do |f|
-      f.puts @title
-      f.puts @text
-    end
+    conn = PG.connect(host: 'localhost', user: 'postgres', password: 'password', dbname: 'memo_sinatra')
+    conn.exec("insert into notes (title, text) values ('#{@title}', '#{@text}');")
+    conn&.close
   end
 end
