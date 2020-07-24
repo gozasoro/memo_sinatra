@@ -1,40 +1,47 @@
 # frozen_string_literal: true
 
+require 'pg'
+
 class Note
   class << self
     def list
       array = []
-      Dir.glob('notes/*').sort_by { |f| File.birthtime(f) }.each do |path|
-        title = ''
-        File.open(path) { |f| title = f.gets }
-        array.push << {
-          title: title,
-          filename: File.basename(path)
+      conn = PG.connect(host: 'localhost', user: 'postgres', password: 'password', dbname: 'memo_sinatra')
+      conn.exec('select * from notes').each do |row|
+        array << {
+          filename: row['id'],
+          title: row['title']
         }
       end
+      conn&.close
       array
     end
 
     def content(filename)
       hash = {}
-      File.open("notes/#{filename}") do |f|
-        lines = f.readlines
-        hash[:title] = lines.shift
-        hash[:text] =  lines.join('')
+      conn = PG.connect(host: 'localhost', user: 'postgres', password: 'password', dbname: 'memo_sinatra')
+      conn.prepare('content', 'select * from notes where id = $1')
+      conn.exec_prepared('content', [filename]) do |result|
+        hash[:title] = result[0]['title']
+        hash[:text] = result[0]['text']
       end
+      conn&.close
       hash
     end
 
     def rewrite(filename, title, text)
-      path = "notes/#{filename}"
-      File.open(path, 'w') do |f|
-        f.puts title == '' ? 'no title' : title
-        f.puts text
-      end
+      title == '' ? 'no title' : title
+      conn = PG.connect(host: 'localhost', user: 'postgres', password: 'password', dbname: 'memo_sinatra')
+      conn.prepare('rewrite', 'update notes set title = $1, text = $2 where id = $3')
+      conn.exec_prepared('rewrite', [title, text, filename])
+      conn&.close
     end
 
     def delete(filename)
-      File.delete("notes/#{filename}")
+      conn = PG.connect(host: 'localhost', user: 'postgres', password: 'password', dbname: 'memo_sinatra')
+      conn.prepare('delete', 'delete from notes where id = $1')
+      conn.exec_prepared('delete', [filename])
+      conn&.close
     end
   end
 
@@ -44,10 +51,9 @@ class Note
   end
 
   def write
-    path = "notes/#{Time.now.to_i}.txt"
-    File.open(path, 'w') do |f|
-      f.puts @title
-      f.puts @text
-    end
+    conn = PG.connect(host: 'localhost', user: 'postgres', password: 'password', dbname: 'memo_sinatra')
+    conn.prepare('write', 'insert into notes (title, text) values ($1, $2);')
+    conn.exec_prepared('write', [@title, @text])
+    conn&.close
   end
 end
